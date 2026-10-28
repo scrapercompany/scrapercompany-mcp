@@ -159,11 +159,11 @@ Every tool is annotated. Only the `monitoring` and `webhooks` groups change data
 export SCRAPERCOMPANY_API_KEY=sk_...
 cd examples
 python rate_calendar.py "The Savoy" London --days 60 --currency GBP              # 10 credits
-python rate_parity.py "The Savoy" London --check-in 2026-11-20 --currency GBP --market GB   # 12 credits
+python rate_parity.py "The Savoy" London --check-in 2026-11-06 --currency GBP --market GB   # 12 credits
 python review_watch.py "The Savoy" London --pages 3 --max-rating 3               # 8 credits
 ```
 
-`rate_parity.py` prints every seller's price for one night and flags the sellers that undercut the hotel's own website:
+`rate_parity.py` prints every seller's price for one night and flags the sellers that undercut the hotel's own website (a real run on 28 October 2026):
 
 ```text
 The Savoy, 2026-11-06, 1 night, 2 adults, GBP
