@@ -2,14 +2,18 @@
 
 # ScraperCompany MCP server
 
-Live hotel, Airbnb/Vrbo and flight prices as tools your AI agent can call. Price a hotel for the next 330 nights in one call, see every booking site's price for a stay next to the hotel's own website, pull guest reviews, and search Google Flights.
+[![MCP](https://lobehub.com/badge/mcp/scrapercompany)](https://lobehub.com/mcp/scrapercompany)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+**166+ live-data tools** for AI agents: hotels, vacation rentals, flights, reviews, cars and attractions, plus Google search/maps, jobs, shopping, property listings, SEC filings, events and more. Price a hotel for the next 330 nights in one call, compare every booking site's price for a stay to the hotel's own website (over 50 booking engines, adding more), pull guest reviews, or search Google Flights — then add other groups when you need them.
 
 This is a **remote** MCP server: there is nothing to install or run. This repository holds the connection settings for each client and a few short examples. The server itself is hosted by ScraperCompany.
 
-- **Server URL:** `https://api.scrapercompany.com/mcp` (Streamable HTTP)
+- **Server URL:** `https://api.scrapercompany.com/mcp` (Streamable HTTP). Plain `/mcp` is the default set of 24 hotel and flight tools; add groups with `/mcp/g/default,reviews` or use `/mcp/g/travel` (55 read-only travel tools) or `/mcp/g/all` (everything).
 - **Sign-in:** OAuth 2.1 in the browser, or an API key in the `x-api-key` header
 - **Official MCP Registry:** `com.scrapercompany/travel-data`
 - **Docs:** [scrapercompany.com/docs/mcp](https://scrapercompany.com/docs/mcp) · **Pricing:** [scrapercompany.com/pricing](https://scrapercompany.com/pricing)
+- **Listings:** [LobeHub](https://lobehub.com/mcp/scrapercompany) · [cursor.directory](https://cursor.directory/plugins/scrapercompany)
 
 ## What you can ask
 
@@ -22,6 +26,10 @@ This is a **remote** MCP server: there is nothing to install or run. This reposi
 > Summarise this month's 1- and 2-star reviews for my hotel and list the ones we haven't replied to.
 
 > Cheapest dates to fly Montreal to Paris in January, and what does that week cost at the hotel near the Louvre I like?
+
+> What are Sixt and DiscoverCars quoting for a week in Rome from FCO next month?
+
+> Show open LinkedIn and Indeed roles for "revenue manager" in Toronto, and the latest 10-K for that hotel group.
 
 ## Connect
 
@@ -92,7 +100,7 @@ A `401` means the key is missing or wrong.
 
 ## Tools
 
-The default connection shows 24 read-only tools. Each tool description states its cost in credits. A call that fails or comes back empty costs nothing.
+The server exposes **166+ tools in 21 groups**. A plain connection to `/mcp` shows the **default set of 24** read-only hotel and flight tools (table below). Add groups in the URL when you need more, for example `/mcp/g/default,reviews,serp` or `/mcp/g/travel` / `/mcp/g/all`. Each tool description states its cost in credits. A call that fails or comes back empty costs nothing.
 
 | Tool | What it does | Credits |
 | --- | --- | --- |
@@ -130,7 +138,7 @@ Every tool belongs to a group. A long tool list costs your agent context in ever
 | `catalog` | Credit balance and the endpoint catalog |
 | `search` | Hotel name or link to each site's id; destination search |
 | `rates` | Google and booking-site prices (Booking.com, Hotels.com, Expedia, Agoda, Tripadvisor, Trivago and more) for a stay or a horizon |
-| `official` | The hotel's own website: rates and loyalty ladder |
+| `official` | The hotel's own website: rates and loyalty ladder across over 50 booking engines |
 | `rentals` | Airbnb and Vrbo search, quotes and calendars |
 | `reviews` | Guest reviews per source, merged, and response insights |
 | `content` | Property details, photos, facilities, nearby places |
@@ -143,11 +151,13 @@ Every tool belongs to a group. A long tool list costs your agent context in ever
 | `jobs` | LinkedIn, Indeed, Google Jobs and company careers pages |
 | `video` | YouTube search, video details, transcripts, comments, channels |
 | `apps` | Google Play and Apple App Store |
-| `shopping` | Amazon, Walmart, Google Shopping, TikTok Shop and Shopify |
-| `property` | Property listings for sale or rent |
-| `companies` | SEC filings, financials, insider trades, earnings calendar |
+| `shopping` | Amazon, Walmart, Target, Google Shopping, TikTok Shop and Shopify |
+| `property` | Property listings for sale or rent (Domain, Redfin, Zillow, Centris) |
+| `companies` | SEC filings, financials, insider trades, earnings calendar, businesses for sale |
 | `marketplace` | Craigslist, Kijiji, Karrot and Etsy listings |
+| `events` | Ticket search across SeatGeek, Ticketmaster and StubHub |
 | `web` | Any public web page as Markdown, text or HTML |
+| `default` / `travel` / `all` | Shortcuts: default set (24), read-only travel set (55), or every tool |
 
 Every tool is annotated. Only the `monitoring` and `webhooks` groups change data, and clients that ask before running write tools will ask before running those.
 
