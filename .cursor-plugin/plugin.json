@@ -1,12 +1,32 @@
 {
   "name": "scrapercompany",
-  "version": "1.0.0",
-  "description": "Live hotel, Airbnb/Vrbo and flight prices for your agent: 330-night Google Hotels rate calendars, every booking site's price for a stay, the hotel's own-site rates, guest reviews and Google Flights.",
-  "author": { "name": "ScraperCompany", "email": "support@scrapercompany.com" },
+  "version": "1.1.0",
+  "description": "Live travel and open-web data for your agent: hotel rate calendars, booking-site vs own-website prices, Airbnb/Vrbo, Google Flights, reviews, cars, attractions, plus search, jobs, shopping, property and company data. 166+ tools in groups; default URL loads the hotel/flight set. OAuth or API key.",
+  "author": {
+    "name": "ScraperCompany",
+    "email": "support@scrapercompany.com"
+  },
   "homepage": "https://scrapercompany.com/docs/mcp",
   "repository": "https://github.com/scrapercompany/scrapercompany-mcp",
   "license": "MIT",
-  "keywords": ["hotel prices", "rate shopping", "rate parity", "google hotels", "airbnb", "vrbo", "google flights", "hotel reviews", "travel data", "mcp"],
+  "keywords": [
+    "hotel prices",
+    "rate shopping",
+    "rate parity",
+    "google hotels",
+    "airbnb",
+    "vrbo",
+    "google flights",
+    "hotel reviews",
+    "travel data",
+    "car rental",
+    "jobs",
+    "shopping",
+    "property",
+    "sec filings",
+    "mcp",
+    "mcp server"
+  ],
   "logo": "assets/logo.svg",
   "variables": {
     "type": "object",
@@ -17,6 +37,8 @@
         "description": "Your API key (starts with sk_). Create one in the dashboard at https://api.scrapercompany.com/dashboard. New accounts get a free trial: 50 calls or 14 days, no card."
       }
     },
-    "required": ["SCRAPERCOMPANY_API_KEY"]
+    "required": [
+      "SCRAPERCOMPANY_API_KEY"
+    ]
   }
 }
