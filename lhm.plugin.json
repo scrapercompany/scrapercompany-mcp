@@ -1,0 +1,1808 @@
+{
+  "author": "ScraperCompany",
+  "authorUrl": "https://scrapercompany.com",
+  "cloudEndpoint": "https://api.scrapercompany.com/mcp",
+  "description": "Live hotel, Airbnb/Vrbo and flight prices for AI agents: 330-night Google Hotels rate calendars, every booking site's price for a stay next to the hotel's own website, guest reviews and Google Flights. Sign in with OAuth or an API key; each tool states its credit cost and failed or empty calls are free.",
+  "homepage": "https://scrapercompany.com/docs/mcp",
+  "icon": "https://scrapercompany.com/icon-512.png",
+  "identifier": "scrapercompany",
+  "name": "ScraperCompany",
+  "prompts": [],
+  "resources": [],
+  "tags": [
+    "hotel-prices",
+    "travel",
+    "rate-parity",
+    "google-hotels",
+    "airbnb",
+    "vrbo",
+    "flights",
+    "reviews"
+  ],
+  "tools": [
+    {
+      "name": "resolve_hotel",
+      "title": "Find a hotel",
+      "description": "Start here for any hotel price question: resolve a hotel name (and city) to Google property tokens, best match first. Tokens are stable: resolve once, then reuse. Costs 2 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Property name as a guest would type it. Fuzzy — exact punctuation does not matter."
+          },
+          "city": {
+            "type": "string",
+            "default": "",
+            "description": "Strongly recommended. Without it a common brand name matches the wrong city."
+          },
+          "market": {
+            "type": "string",
+            "description": "ISO country/Google market to try first, e.g. `US`, `MX`, `GD`. Search accepts markets beyond the pricing-market table because property tokens are global; the response reports where it matched. One of 251 accepted values, e.g. GD."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 5,
+            "description": "Candidates to return, best match first."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Find a hotel",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "resolve_google_hotel",
+      "title": "Find a hotel by address",
+      "description": "Look up a Google Hotels property by name and place; each candidate carries its mailing address and property_token for the other tools. Costs 12 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200,
+            "description": "Hotel name plus city, region or country."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3,
+            "default": 3,
+            "description": "How many candidates to resolve with addresses (1-3)."
+          },
+          "gl": {
+            "type": "string",
+            "default": "us",
+            "description": "Country market for the search. One of 251 accepted values, e.g. us."
+          }
+        },
+        "required": [
+          "q"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Find a hotel by address",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "find_hotel_everywhere",
+      "title": "Find a hotel on every booking site",
+      "description": "Hotel name and city to its id and link on Google Hotels, Booking, Hotels.com, Expedia, Agoda, Tripadvisor, Kayak, Priceline and its own site. Per source: matched, ambiguous (candidates) or no_match. Costs 18 credits by default (Google 9, official site 2, other sources 1 each); free if nothing is found.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200,
+            "description": "Hotel name as a guest would search for it."
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "City. Strongly recommended: it is sent with the name and checked against every candidate."
+          },
+          "country": {
+            "type": "string",
+            "maxLength": 60,
+            "description": "Two-letter country code."
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 2048,
+            "description": "A link you already have for this hotel."
+          },
+          "sources": {
+            "type": "array",
+            "description": "Subset to query; default all but hostelworld/vrbo.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "google",
+                "booking",
+                "hotels",
+                "expedia",
+                "agoda",
+                "tripadvisor",
+                "kayak",
+                "priceline",
+                "hostelworld",
+                "vrbo",
+                "official"
+              ]
+            },
+            "maxItems": 11
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Find a hotel on every booking site",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "hotel_link_ids",
+      "title": "Identify a hotel link",
+      "description": "Source and property id carried by a hotel link (OTA page, Google Hotels/Maps, short link or the hotel's site). Costs 1 credit only to follow a short link; else free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 2048,
+            "description": "The link."
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Identify a hotel link",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "hotel_destination_search",
+      "title": "Search hotels in a destination",
+      "description": "Properties Google Hotels lists for a destination and stay, about 20 per page, in brief: property_token, name, class, rating and reviews, the cheapest rate for the stay, address and coordinates, a few amenities, two nearby places and one picture. Call hotel_details for the full property or hotel_offers for every booking site's price; feed property_token to hotel_rate_calendar. Page on with page_token. Costs 4 credits per page; a page with no results is free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200,
+            "description": "Destination as typed into Google Hotels, e.g. hotels in Montreal."
+          },
+          "check_in": {
+            "type": "string",
+            "format": "date",
+            "description": "First night of the stay, `YYYY-MM-DD`."
+          },
+          "check_out": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date, after `check_in`; at most 30 nights. YYYY-MM-DD."
+          },
+          "adults": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 2,
+            "description": "Adults in the room. Encoded as one guest entry each, the way Google's own control sends them."
+          },
+          "children_ages": {
+            "type": "array",
+            "default": [],
+            "description": "One age (0-17) per child. Google prices on each age; the response is rejected if Google priced a different party.",
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 8
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "AED",
+              "ARS",
+              "AUD",
+              "BRL",
+              "CAD",
+              "CHF",
+              "CLP",
+              "CNY",
+              "COP",
+              "CZK",
+              "DKK",
+              "EGP",
+              "EUR",
+              "GBP",
+              "HKD",
+              "HUF",
+              "IDR",
+              "ILS",
+              "INR",
+              "JPY",
+              "KRW",
+              "MXN",
+              "MYR",
+              "NOK",
+              "NZD",
+              "PEN",
+              "PHP",
+              "PLN",
+              "QAR",
+              "RON",
+              "SAR",
+              "SEK",
+              "SGD",
+              "THB",
+              "TRY",
+              "TWD",
+              "USD",
+              "VND",
+              "ZAR"
+            ],
+            "default": "USD",
+            "description": "ISO 4217 code for the returned prices. Major currencies include AED, AUD, BRL, CAD, CHF, CNY, EUR, GBP, HKD, INR, JPY, KRW, MXN, NZD, SGD, USD; the searchable dropdown contains all 39 supported codes."
+          },
+          "gl": {
+            "type": "string",
+            "default": "us",
+            "description": "Two-letter Google country (market). Sets the market; the currency is requested separately. One of 251 accepted values, e.g. us, ca."
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": [
+              "highest_rating",
+              "lowest_price",
+              "most_reviewed",
+              "relevance"
+            ],
+            "default": "relevance",
+            "description": "Result order, as Google's Sort by control."
+          },
+          "price_min": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Minimum nightly price in `currency`."
+          },
+          "price_max": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Maximum nightly price in `currency`."
+          },
+          "min_rating": {
+            "type": "number",
+            "enum": [
+              3.5,
+              4.0,
+              4.5
+            ],
+            "description": "Minimum guest rating: 3.5, 4.0 or 4.5."
+          },
+          "hotel_class": {
+            "type": "array",
+            "default": [],
+            "description": "Star classes to include, 2-5.",
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 4
+          },
+          "amenities": {
+            "type": "array",
+            "default": [],
+            "description": "Amenity filter ids: 1 Free parking, 3 Parking, 4 Indoor pool, 5 Outdoor pool, 6 Pool, 7 Fitness center, 8 Restaurant, 9 Free breakfast, 10 Spa, 11 Beach access, 12 Child-friendly, 15 Bar, 19 Pet-friendly, 22 Room service, 35 Free Wi-Fi, 40 Air-conditioned, 52 All-inclusive available, 53 Wheelchair accessible, 61 EV charger.",
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 19
+          },
+          "free_cancellation": {
+            "type": "boolean",
+            "default": false,
+            "description": "Only properties Google lists with free cancellation."
+          },
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_\\-+/=]{1,200}$",
+            "description": "pagination.next_page_token from the previous page; resend the same arguments with it."
+          }
+        },
+        "required": [
+          "q",
+          "check_in",
+          "check_out"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Search hotels in a destination",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "expedia_find_hotel",
+      "title": "Find a hotel on Expedia",
+      "description": "Resolve a hotel name (and city) to Expedia's numeric property id, best match first. Store recommended_match.property_id. Costs 2 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Hotel name as a guest would search for it."
+          },
+          "city": {
+            "type": "string",
+            "default": "",
+            "description": "Strongly recommended. Sent with the name to Expedia's search and used to rank same-brand hotels in other cities lower."
+          },
+          "market": {
+            "type": "string",
+            "enum": [
+              "CA",
+              "US"
+            ],
+            "default": "US",
+            "description": "Expedia point-of-sale, which is how currency is selected - there is no currency field. `US` prices in USD on www.expedia.com, `CA` in CAD on www.expedia.ca. The display basis differs by market (the US room card leads with the stay total, CA with the nightly price), so compare within one market."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 5,
+            "description": "Maximum hotel candidates to return, best match first."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Find a hotel on Expedia",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "hotel_rate_calendar",
+      "title": "Hotel nightly rate calendar",
+      "description": "Nightly prices for one hotel across a forward horizon (default 90 nights, up to 330) in a single call, with base, taxes, fees and total per night. Use for a hotel's price calendar or cheapest nights. Costs 8 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 8,
+            "description": "Property token from resolve_hotel."
+          },
+          "days": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 330,
+            "default": 90,
+            "description": "Nights to price, starting at `start`. Max 330."
+          },
+          "start": {
+            "type": "string",
+            "format": "date",
+            "description": "First stay date. Defaults to tomorrow. YYYY-MM-DD."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "AED",
+              "ARS",
+              "AUD",
+              "BRL",
+              "CAD",
+              "CHF",
+              "CLP",
+              "CNY",
+              "COP",
+              "CZK",
+              "DKK",
+              "EGP",
+              "EUR",
+              "GBP",
+              "HKD",
+              "HUF",
+              "IDR",
+              "ILS",
+              "INR",
+              "JPY",
+              "KRW",
+              "MXN",
+              "MYR",
+              "NOK",
+              "NZD",
+              "PEN",
+              "PHP",
+              "PLN",
+              "QAR",
+              "RON",
+              "SAR",
+              "SEK",
+              "SGD",
+              "THB",
+              "TRY",
+              "TWD",
+              "USD",
+              "VND",
+              "ZAR"
+            ],
+            "description": "ISO currency for the returned prices. It is part of the request, so it does not depend on where the request is served from."
+          },
+          "market": {
+            "type": "string",
+            "description": "Market/country, e.g. `US`, `MX`, `AU`, `GB`. Sets `gl` and the default tax basis. Omit to derive it from `currency`. One of 52 accepted values, e.g. US."
+          },
+          "adults": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8,
+            "default": 2,
+            "description": "Occupancy. Any value 1-8 works. Children are not supported by the calendar."
+          },
+          "los": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "default": 1,
+            "description": "Length of stay, in nights, that each quote is for."
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Hotel nightly rate calendar",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "hotel_offers",
+      "title": "Hotel offers by OTA",
+      "description": "Every booking site's price for one stay at one hotel (Booking.com, Expedia, Hotels.com, the hotel's own site...), with room detail where Google shows it. The quickest booking-site vs direct comparison. Costs 10 credits, or 14 when require_rooms is set.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 8,
+            "description": "Property token from resolve_hotel."
+          },
+          "check_in": {
+            "type": "string",
+            "format": "date",
+            "description": "First night of the stay, `YYYY-MM-DD`."
+          },
+          "check_out": {
+            "type": "string",
+            "format": "date",
+            "description": "Alternative to `nights`; wins if both are given. YYYY-MM-DD."
+          },
+          "nights": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "default": 1,
+            "description": "Ignored when `check_out` is given."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "AED",
+              "ARS",
+              "AUD",
+              "BRL",
+              "CAD",
+              "CHF",
+              "CLP",
+              "CNY",
+              "COP",
+              "CZK",
+              "DKK",
+              "EGP",
+              "EUR",
+              "GBP",
+              "HKD",
+              "HUF",
+              "IDR",
+              "ILS",
+              "INR",
+              "JPY",
+              "KRW",
+              "MXN",
+              "MYR",
+              "NOK",
+              "NZD",
+              "PEN",
+              "PHP",
+              "PLN",
+              "QAR",
+              "RON",
+              "SAR",
+              "SEK",
+              "SGD",
+              "THB",
+              "TRY",
+              "TWD",
+              "USD",
+              "VND",
+              "ZAR"
+            ],
+            "description": "ISO currency for the returned prices. It is part of the request, so it does not depend on where the request is served from."
+          },
+          "market": {
+            "type": "string",
+            "description": "Market/country, e.g. `US`, `MX`, `AU`, `GB`. Sets `gl` and the default tax basis. Null when omitted. One of 52 accepted values, e.g. US."
+          },
+          "adults": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8,
+            "default": 2,
+            "description": "Occupancy. Any value 1-8 works. Children are not supported by the calendar."
+          }
+        },
+        "required": [
+          "token",
+          "check_in"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Hotel offers by OTA",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "compare_ota_rates",
+      "title": "Compare OTA rates",
+      "description": "One stay priced directly on Booking.com, Hotels.com and Agoda for the identifiers you have, with per-source status and the spread. Costs 30 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "check_in": {
+            "type": "string",
+            "format": "date",
+            "description": "First night of the stay, `YYYY-MM-DD`."
+          },
+          "check_out": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date. An alternative to `nights` — if both are given, this wins. YYYY-MM-DD."
+          },
+          "nights": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "default": 1,
+            "description": "Length of stay. Ignored when `check_out` is supplied."
+          },
+          "adults": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8,
+            "default": 2,
+            "description": "Adults in the room. Two is the hotel default; pass one for a hostel, which is priced per bed. Any value 1-8 works."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "AED",
+              "ARS",
+              "AUD",
+              "BRL",
+              "CAD",
+              "CHF",
+              "CLP",
+              "CNY",
+              "COP",
+              "CZK",
+              "DKK",
+              "EGP",
+              "EUR",
+              "GBP",
+              "HKD",
+              "HUF",
+              "IDR",
+              "ILS",
+              "INR",
+              "JPY",
+              "KRW",
+              "MXN",
+              "MYR",
+              "NOK",
+              "NZD",
+              "PEN",
+              "PHP",
+              "PLN",
+              "QAR",
+              "RON",
+              "SAR",
+              "SEK",
+              "SGD",
+              "THB",
+              "TRY",
+              "TWD",
+              "USD",
+              "VND",
+              "ZAR"
+            ],
+            "default": "USD",
+            "description": "ISO 4217 code for the returned prices. Major currencies include AED, AUD, BRL, CAD, CHF, CNY, EUR, GBP, HKD, INR, JPY, KRW, MXN, NZD, SGD, USD; the searchable dropdown contains all 39 supported codes."
+          },
+          "booking_pagename": {
+            "type": "string",
+            "description": "Booking slug. Omit to skip Booking entirely."
+          },
+          "booking_country": {
+            "type": "string",
+            "default": "us",
+            "description": "Two-letter segment before the slug in the Booking URL. One of 251 accepted values, e.g. us."
+          },
+          "hotels_property_id": {
+            "type": "string",
+            "description": "Hotels.com numeric id from `POST /v1/ota/hotels/search`; `POST /v1/meta/search` returns it as `ids.hotels`. Omit to skip Hotels.com."
+          },
+          "hotels_market": {
+            "type": "string",
+            "enum": [
+              "AU",
+              "CA",
+              "DE",
+              "EU",
+              "FR",
+              "GB",
+              "IE",
+              "IT",
+              "NL",
+              "NZ",
+              "US"
+            ],
+            "default": "US",
+            "description": "Hotels.com point-of-sale; also picks its currency."
+          },
+          "agoda_property_id": {
+            "type": "string",
+            "description": "Agoda numeric id from `POST /v1/ota/agoda/search`; `POST /v1/meta/search` returns it as `ids.agoda`. Omit to skip Agoda."
+          },
+          "expedia_property_id": {
+            "type": "string",
+            "description": "Expedia numeric id from `POST /v1/ota/expedia/search`; `POST /v1/meta/search` returns it as `ids.expedia`. Omit to skip Expedia."
+          },
+          "expedia_market": {
+            "type": "string",
+            "enum": [
+              "CA",
+              "US"
+            ],
+            "default": "US",
+            "description": "Expedia point-of-sale; also picks its currency."
+          },
+          "country_market": {
+            "type": "string",
+            "description": "Point-of-sale country (two letters) the price is quoted for. Booking prices by visitor country."
+          }
+        },
+        "required": [
+          "check_in"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Compare OTA rates",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "expedia_rates",
+      "title": "Expedia rooms and rates",
+      "description": "Expedia's own rooms and rate plans for one stay: upstream total, nightly price before taxes, derived taxes and fees, cancellation terms and payment model. The market picks the currency (US=USD, CA=CAD). Costs 12 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "property_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^\\d+$",
+            "description": "Numeric Expedia id (from find_hotel_everywhere or expedia_find_hotel)."
+          },
+          "check_in": {
+            "type": "string",
+            "format": "date",
+            "description": "First night of the stay, `YYYY-MM-DD`."
+          },
+          "check_out": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date. An alternative to `nights` — if both are given, this wins. YYYY-MM-DD."
+          },
+          "nights": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 28,
+            "default": 1,
+            "description": "Length of stay. Ignored when `check_out` is supplied."
+          },
+          "adults": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8,
+            "default": 2,
+            "description": "Adults in the room."
+          },
+          "market": {
+            "type": "string",
+            "enum": [
+              "CA",
+              "US"
+            ],
+            "default": "US",
+            "description": "Expedia point-of-sale, which is how currency is selected - there is no currency field. `US` prices in USD on www.expedia.com, `CA` in CAD on www.expedia.ca. The display basis differs by market (the US room card leads with the stay total, CA with the nightly price), so compare within one market."
+          },
+          "rooms": {
+            "type": "boolean",
+            "default": true,
+            "description": "Return every room type and rate plan. False returns the headline price only. Same credit cost."
+          }
+        },
+        "required": [
+          "property_id",
+          "check_in"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Expedia rooms and rates",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "official_site_rates",
+      "title": "Hotel's own-site rates",
+      "description": "Rooms and rate plans (public, member, points, points+cash) from the hotel's own booking engine. Pass the hotel's website; the booking engine is detected automatically. `loyalty` summarises public vs member vs points with a derived cents-per-point. Costs 4 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "minLength": 8,
+            "description": "The hotel's public homepage or property page. The API finds its booking page; a direct booking URL is also accepted."
+          },
+          "check_in": {
+            "type": "string",
+            "format": "date",
+            "description": "First night of the stay, `YYYY-MM-DD`."
+          },
+          "check_out": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date. An alternative to `nights` — if both are given, this wins. YYYY-MM-DD."
+          },
+          "nights": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "default": 1,
+            "description": "Length of stay. Ignored when `check_out` is supplied."
+          },
+          "adults": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8,
+            "default": 2,
+            "description": "Adults in the room. Two is the hotel default; pass one for a hostel, which is priced per bed. Any value 1-8 works."
+          },
+          "rooms": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8,
+            "default": 1,
+            "description": "Rooms requested."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "AED",
+              "ARS",
+              "AUD",
+              "BRL",
+              "CAD",
+              "CHF",
+              "CLP",
+              "CNY",
+              "COP",
+              "CZK",
+              "DKK",
+              "EGP",
+              "EUR",
+              "GBP",
+              "HKD",
+              "HUF",
+              "IDR",
+              "ILS",
+              "INR",
+              "JPY",
+              "KRW",
+              "MXN",
+              "MYR",
+              "NOK",
+              "NZD",
+              "PEN",
+              "PHP",
+              "PLN",
+              "QAR",
+              "RON",
+              "SAR",
+              "SEK",
+              "SGD",
+              "THB",
+              "TRY",
+              "TWD",
+              "USD",
+              "VND",
+              "ZAR"
+            ],
+            "default": "USD",
+            "description": "ISO 4217 code for the returned prices. Major currencies include AED, AUD, BRL, CAD, CHF, CNY, EUR, GBP, HKD, INR, JPY, KRW, MXN, NZD, SGD, USD; the searchable dropdown contains all 39 supported codes."
+          }
+        },
+        "required": [
+          "url",
+          "check_in"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Hotel's own-site rates",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "airbnb_search",
+      "title": "Search Airbnb",
+      "description": "Airbnb listings for a destination and dates with live prices and availability. Costs 12 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "description": "Destination, e.g. Toronto."
+          },
+          "check_in_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Exact check-in date, `YYYY-MM-DD`. Cannot be mixed with `time_period`."
+          },
+          "check_out_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Exact departure date. Requires `check_in_date`; defaults to the next day when omitted. YYYY-MM-DD."
+          },
+          "adults": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 16,
+            "description": "Adults aged 13+, from 0 through 16. Defaults to one when another guest count is set."
+          },
+          "currency": {
+            "type": "string",
+            "description": "Airbnb-supported ISO 4217 display currency. Omit to use the selected domain's default. One of 51 accepted values, e.g. CAD."
+          },
+          "airbnb_domain": {
+            "type": "string",
+            "default": "airbnb.com",
+            "description": "Country/language Airbnb host, such as `airbnb.com`, `airbnb.ca` or `fr.airbnb.ca`. One of 94 accepted values, e.g. airbnb.com, airbnb.ca."
+          },
+          "price_min": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Minimum displayed trip price."
+          },
+          "price_max": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Maximum displayed trip price."
+          },
+          "next_page_token": {
+            "type": "string",
+            "description": "Opaque cursor returned in `pagination.next_page_token`."
+          }
+        },
+        "required": [
+          "q"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Search Airbnb",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "airbnb_priced_calendar",
+      "title": "Airbnb priced availability calendar",
+      "description": "Day-by-day availability and stay rules for one Airbnb listing, with Airbnb's own quoted prices. Each priced date is the check-in of a real quoted stay (its minimum stay unless stay_nights is given), because Airbnb folds fees into the nightly rate. Costs 12 credits plus 1 per night actually priced (at most 92).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "listing_id": {
+            "type": "string",
+            "pattern": "^\\d{1,25}$",
+            "description": "Numeric Airbnb listing id (the number in airbnb.com/rooms/<id>, or an id from airbnb_search)."
+          },
+          "airbnb_domain": {
+            "type": "string",
+            "default": "airbnb.com",
+            "description": "Country/language Airbnb host. The host does not change prices; it picks the market and the default currency. `airbnb.ca`, `airbnb.com` and `airbnb.co.uk` all work. One of 94 accepted values, e.g. airbnb.com, airbnb.ca."
+          },
+          "currency": {
+            "type": "string",
+            "description": "Airbnb-supported ISO 4217 currency for quoted prices. Omit for the domain's default; the currency Airbnb actually priced in is returned on every priced day. One of 51 accepted values, e.g. CAD."
+          },
+          "months": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12,
+            "default": 3,
+            "description": "Calendar months to return, starting at `start_month` (default 3)."
+          },
+          "start_month": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12,
+            "description": "First month, 1-12. Defaults to the current month."
+          },
+          "start_year": {
+            "type": "integer",
+            "minimum": 2020,
+            "maximum": 2100,
+            "description": "Year of `start_month`. Defaults to the current year."
+          },
+          "adults": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16,
+            "default": 1,
+            "description": "Adults aged 13+; quotes are priced for this party."
+          },
+          "children": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 15,
+            "default": 0,
+            "description": "Children aged 2-12."
+          },
+          "infants": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5,
+            "default": 0,
+            "description": "Infants under 2."
+          },
+          "pets": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5,
+            "default": 0,
+            "description": "Pets."
+          },
+          "price_nights": {
+            "type": "string",
+            "enum": [
+              "none",
+              "sample",
+              "all"
+            ],
+            "default": "sample",
+            "description": "`none`: availability only (one upstream request). `sample`: quote `max_price_quotes` check-in dates spread evenly over the valid ones (default 12). `all`: quote every valid check-in date in order, up to `max_price_quotes` (default and maximum 92). Each quote is one credit."
+          },
+          "max_price_quotes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 92,
+            "description": "Upper bound on price quotes, 1-92. The request holds 8 + this many credits and is charged 8 + the nights actually priced."
+          },
+          "stay_nights": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 28,
+            "description": "Length of the stay each priced date is quoted for. Omit to use each date's own minimum stay. Airbnb folds cleaning and service fees into its nightly rate, so the same night costs less per night on a longer stay. 1-28."
+          }
+        },
+        "required": [
+          "listing_id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Airbnb priced availability calendar",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "vrbo_search",
+      "title": "Search Vrbo",
+      "description": "Vacation rentals on Vrbo for a destination and dates, with nightly and stay prices and the property_id vrbo_quote takes. Costs 2 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "minLength": 2,
+            "description": "Place as a guest would type it, e.g. `South Lake Tahoe, California`. Vrbo resolves it to a region."
+          },
+          "check_in": {
+            "type": "string",
+            "format": "date",
+            "description": "First night of the stay, `YYYY-MM-DD`."
+          },
+          "check_out": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date. An alternative to `nights` — if both are given, this wins. YYYY-MM-DD."
+          },
+          "nights": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 28,
+            "default": 1,
+            "description": "Length of stay. Ignored when `check_out` is supplied."
+          },
+          "adults": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16,
+            "default": 2,
+            "description": "Guests (adults)."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 20,
+            "description": "Maximum listings to return, in Vrbo's recommended order."
+          },
+          "market": {
+            "type": "string",
+            "enum": [
+              "US"
+            ],
+            "default": "US",
+            "description": "Vrbo point-of-sale. Only `US` (www.vrbo.com, USD) is verified."
+          }
+        },
+        "required": [
+          "destination",
+          "check_in"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Search Vrbo",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "vrbo_quote",
+      "title": "Vrbo stay quote",
+      "description": "Quote one Vrbo rental: nightly and total price (fees included as Vrbo labels it), payment model, or Vrbo's reason it cannot be booked. Give property_id (from vrbo_search) or listing_id (from a Vrbo URL). Costs 12 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "property_id": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric id returned by `POST /v1/ota/vrbo/search` (`property_id` on each listing). Not the id in the Vrbo URL."
+          },
+          "listing_id": {
+            "type": "string",
+            "pattern": "^\\d+(?:ha)?$",
+            "description": "The listing id in a Vrbo URL, e.g. `20218736ha` for `vrbo.com/20218736ha`. Resolved to `property_id` with one page load."
+          },
+          "check_in": {
+            "type": "string",
+            "format": "date",
+            "description": "First night of the stay, `YYYY-MM-DD`."
+          },
+          "check_out": {
+            "type": "string",
+            "format": "date",
+            "description": "Departure date. An alternative to `nights` — if both are given, this wins. YYYY-MM-DD."
+          },
+          "nights": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 28,
+            "default": 1,
+            "description": "Length of stay. Ignored when `check_out` is supplied."
+          },
+          "adults": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16,
+            "default": 2,
+            "description": "Guests (adults)."
+          },
+          "market": {
+            "type": "string",
+            "enum": [
+              "US"
+            ],
+            "default": "US",
+            "description": "Vrbo point-of-sale. Only `US` (www.vrbo.com, USD) is verified."
+          }
+        },
+        "required": [
+          "check_in"
+        ],
+        "additionalProperties": false,
+        "anyOf": [
+          {
+            "required": [
+              "property_id"
+            ]
+          },
+          {
+            "required": [
+              "listing_id"
+            ]
+          }
+        ]
+      },
+      "annotations": {
+        "title": "Vrbo stay quote",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "hotel_guest_reviews",
+      "title": "Google Hotels guest reviews",
+      "description": "Guest reviews for one hotel, mixed from Google, Tripadvisor and others; each row names its provider and rating scale. Costs 2 credits per page fetched; failed requests free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "property_token": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 200,
+            "description": "Token from resolve_google_hotel."
+          },
+          "pages": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 1,
+            "description": "How many 10-review pages to follow."
+          },
+          "page_token": {
+            "type": "string",
+            "description": "Continuation token from a previous answer's `next_page_token`."
+          },
+          "gl": {
+            "type": "string",
+            "default": "us",
+            "description": "Country for the request. One of 251 accepted values, e.g. us."
+          }
+        },
+        "required": [
+          "property_token"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Google Hotels guest reviews",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "hotel_reviews_all_sources",
+      "title": "Guest reviews across OTAs",
+      "description": "Reviews for one hotel from each source you give an id for (one id is fine), merged across sites; copies keep provenance. include_insights adds response rate, response time and unreplied negative reviews. Costs 2 credits per page per source; failed pages free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "booking_pagename": {
+            "type": "string",
+            "minLength": 2,
+            "description": "Booking.com slug (`ids.booking` of /v1/meta/search)."
+          },
+          "expedia_property_id": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Expedia id (`ids.expedia` of /v1/meta/search)."
+          },
+          "hotels_property_id": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Hotels.com id (`ids.hotels` of /v1/meta/search)."
+          },
+          "agoda_property_id": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Agoda id (`ids.agoda` of /v1/meta/search)."
+          },
+          "tripadvisor_location_id": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Tripadvisor locationId (`ids.tripadvisor` of /v1/meta/search)."
+          },
+          "airbnb_listing_id": {
+            "type": "string",
+            "pattern": "^\\d{1,25}$",
+            "description": "Airbnb listing id (`airbnb.com/rooms/<id>`)."
+          },
+          "vrbo_property_id": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Vrbo property id (/v1/ota/vrbo/search)."
+          },
+          "tripcom_property_id": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Trip.com hotel id (/v1/ota/tripcom/search)."
+          },
+          "google_property_token": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 200,
+            "description": "Google property token (`ids.google` of /v1/meta/search)."
+          },
+          "pages": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "default": 1,
+            "description": "Upstream pages per source (each is one request and one review-page charge)."
+          },
+          "include_insights": {
+            "type": "boolean",
+            "default": false,
+            "description": "Add counts, ratings, response rate, response time, the unanswered queue and the monthly trend."
+          }
+        },
+        "required": [],
+        "additionalProperties": false,
+        "anyOf": [
+          {
+            "required": [
+              "booking_pagename"
+            ]
+          },
+          {
+            "required": [
+              "expedia_property_id"
+            ]
+          },
+          {
+            "required": [
+              "hotels_property_id"
+            ]
+          },
+          {
+            "required": [
+              "agoda_property_id"
+            ]
+          },
+          {
+            "required": [
+              "tripadvisor_location_id"
+            ]
+          },
+          {
+            "required": [
+              "airbnb_listing_id"
+            ]
+          },
+          {
+            "required": [
+              "vrbo_property_id"
+            ]
+          },
+          {
+            "required": [
+              "tripcom_property_id"
+            ]
+          },
+          {
+            "required": [
+              "google_property_token"
+            ]
+          }
+        ]
+      },
+      "annotations": {
+        "title": "Guest reviews across OTAs",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "flight_search",
+      "title": "Search flights",
+      "description": "Every Google Flights itinerary for a route and date: price, times, flight numbers, aircraft, layovers, emissions and bags, plus price insights. Round trips return outbound options with a departure_token for flight_next_leg; complete itineraries carry a booking_token for flight_booking_options. departure/arrival take IATA airport or city codes (YUL, NYC). Costs 4 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "departure": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "description": "IATA airport code (`JFK`) or IATA city code (`NYC`, `LON`, `PAR`, `TYO`...: every airport of that city). For several airports or a Google city id use `departure_id`."
+          },
+          "arrival": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "description": "IATA airport code (`JFK`) or IATA city code (`NYC`, `LON`, `PAR`, `TYO`...: every airport of that city). For several airports or a Google city id use `arrival_id`."
+          },
+          "departure_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Outbound flight date, `YYYY-MM-DD`."
+          },
+          "return_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Return flight date for round-trip. Omit for one-way. YYYY-MM-DD."
+          },
+          "adults": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9,
+            "default": 1,
+            "description": "Number of adult passengers (12+ years old)."
+          },
+          "children": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 8,
+            "default": 0,
+            "description": "Number of children (2-11 years old)."
+          },
+          "infants_in_seat": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4,
+            "default": 0,
+            "description": "Number of infants with seat (under 2 years old)."
+          },
+          "infants_on_lap": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4,
+            "default": 0,
+            "description": "Number of lap infants (under 2 years old); at most one per adult."
+          },
+          "cabin_class": {
+            "type": "string",
+            "enum": [
+              "business",
+              "economy",
+              "first",
+              "premium_economy"
+            ],
+            "default": "economy",
+            "description": "Cabin class: economy, premium_economy, business, first."
+          },
+          "stops": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2,
+            "description": "Maximum stops: 0 nonstop only, 1, or 2. Omit for any."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "AED",
+              "ARS",
+              "AUD",
+              "BRL",
+              "CAD",
+              "CHF",
+              "CLP",
+              "CNY",
+              "COP",
+              "CZK",
+              "DKK",
+              "EGP",
+              "EUR",
+              "GBP",
+              "HKD",
+              "HUF",
+              "IDR",
+              "ILS",
+              "INR",
+              "JPY",
+              "KRW",
+              "MXN",
+              "MYR",
+              "NOK",
+              "NZD",
+              "PEN",
+              "PHP",
+              "PLN",
+              "QAR",
+              "RON",
+              "SAR",
+              "SEK",
+              "SGD",
+              "THB",
+              "TRY",
+              "TWD",
+              "USD",
+              "VND",
+              "ZAR"
+            ],
+            "default": "USD",
+            "description": "ISO 4217 code for the returned prices. Major currencies include AED, AUD, BRL, CAD, CHF, CNY, EUR, GBP, HKD, INR, JPY, KRW, MXN, NZD, SGD, USD; the searchable dropdown contains all 39 supported codes."
+          },
+          "include_airlines": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]{2,13}(,[A-Za-z0-9_]{2,13}){0,19}$",
+            "description": "Comma-separated IATA airline codes and/or alliances (`STAR_ALLIANCE`, `SKYTEAM`, `ONEWORLD`) to keep, e.g. `AC,UA`. Cannot be combined with `exclude_airlines`."
+          },
+          "exclude_airlines": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]{2,13}(,[A-Za-z0-9_]{2,13}){0,19}$",
+            "description": "Comma-separated airline codes to drop. Google's rule: an itinerary also sold under a codeshare partner that is not excluded is kept."
+          },
+          "max_price": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000,
+            "description": "Only itineraries at or below this price, in `currency`."
+          },
+          "max_duration": {
+            "type": "integer",
+            "minimum": 30,
+            "maximum": 5760,
+            "description": "Maximum door-to-door travel time per leg, minutes."
+          },
+          "outbound_times": {
+            "type": "string",
+            "pattern": "^\\d{1,2},\\d{1,2}(,\\d{1,2},\\d{1,2})?$",
+            "description": "Hour window `from,to` for departure, optionally followed by `from,to` for arrival (0-23; `8,12` = leaves 08:00-12:59). SerpApi's format. First leg."
+          },
+          "return_times": {
+            "type": "string",
+            "pattern": "^\\d{1,2},\\d{1,2}(,\\d{1,2},\\d{1,2})?$",
+            "description": "Hour window `from,to` for departure, optionally followed by `from,to` for arrival (0-23; `8,12` = leaves 08:00-12:59). SerpApi's format. Return leg; needs `return_date`."
+          },
+          "carry_on_bags": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0,
+            "description": "Carry-on bags per passenger to include in the price (Google adds the airline's bag fees)."
+          },
+          "checked_bags": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2,
+            "default": 0,
+            "description": "Checked bags per passenger to include in the price."
+          },
+          "exclude_basic_economy": {
+            "type": "boolean",
+            "default": false,
+            "description": "Hide basic-economy fares (Google's \"Economy (exclude Basic)\"; offered on US routes)."
+          },
+          "less_emissions": {
+            "type": "boolean",
+            "default": false,
+            "description": "Only flights with lower-than-typical emissions."
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": [
+              "arrival_time",
+              "departure_time",
+              "duration",
+              "emissions",
+              "price",
+              "top_flights"
+            ],
+            "default": "top_flights",
+            "description": "Result order (SerpApi `sort_by` 1-6 in the same order): top_flights, price, departure_time, arrival_time, duration, emissions. With anything but top_flights Google returns no separate best group."
+          }
+        },
+        "required": [
+          "departure",
+          "arrival",
+          "departure_date"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Search flights",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "flight_next_leg",
+      "title": "Flight return or next leg",
+      "description": "The return flights for a chosen outbound (or the next multi-city leg): pass the departure_token of an itinerary from flight_search. Prices are for the whole trip; last-leg options carry a booking_token. Costs 4 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "departure_token": {
+            "type": "string",
+            "pattern": "^gf1\\.[A-Za-z0-9_\\-]{16,16384}$",
+            "description": "`departure_token` of an itinerary from `/v1/serp/google_flights` (or of a previous `/v1/serp/google_flights_return` leg of a multi-city trip). It carries the search, so nothing else is needed."
+          }
+        },
+        "required": [
+          "departure_token"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Flight return or next leg",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "flight_booking_options",
+      "title": "Flight booking options",
+      "description": "Who sells a complete itinerary and for how much: airline direct and OTAs with price, fare name and rules, bag fees and a booking link. Pass the booking_token of a complete itinerary. Takes 3-12 s. Costs 5 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "booking_token": {
+            "type": "string",
+            "pattern": "^gf1\\.[A-Za-z0-9_\\-]{16,16384}$",
+            "description": "`booking_token` of a complete itinerary: a one-way result of `/v1/serp/google_flights`, or a return/last-leg result of `/v1/serp/google_flights_return`."
+          }
+        },
+        "required": [
+          "booking_token"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Flight booking options",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "flight_location_search",
+      "title": "Find airport or city codes",
+      "description": "Google Flights' own autocomplete: airports, cities (with their airports) and regions for a name, with the codes flight_search takes. Costs 2 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "City, airport or region name, or a code (`paris`, `Heathrow`, `NYC`)."
+          },
+          "hl": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{2,3}(-[A-Za-z]{2,4})?$",
+            "default": "en",
+            "description": "Language of the returned names."
+          },
+          "gl": {
+            "type": "string",
+            "default": "us",
+            "description": "Market/country code (two letters). One of 251 accepted values, e.g. us."
+          }
+        },
+        "required": [
+          "q"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Find airport or city codes",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "flight_price_calendar",
+      "title": "Flight price calendar",
+      "description": "Cheapest fare per departure (and return) date around a chosen date. Costs 6 credits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "departure": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "description": "IATA departure airport code."
+          },
+          "arrival": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "description": "IATA arrival airport code."
+          },
+          "departure_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Target outbound date (center of date range). YYYY-MM-DD."
+          },
+          "return_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Target return date for round-trip. Omit for one-way. YYYY-MM-DD."
+          },
+          "adults": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9,
+            "default": 1,
+            "description": "Number of passengers."
+          },
+          "date_window_days": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "default": 7,
+            "description": "Days before/after target date to include in grid."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "AED",
+              "ARS",
+              "AUD",
+              "BRL",
+              "CAD",
+              "CHF",
+              "CLP",
+              "CNY",
+              "COP",
+              "CZK",
+              "DKK",
+              "EGP",
+              "EUR",
+              "GBP",
+              "HKD",
+              "HUF",
+              "IDR",
+              "ILS",
+              "INR",
+              "JPY",
+              "KRW",
+              "MXN",
+              "MYR",
+              "NOK",
+              "NZD",
+              "PEN",
+              "PHP",
+              "PLN",
+              "QAR",
+              "RON",
+              "SAR",
+              "SEK",
+              "SGD",
+              "THB",
+              "TRY",
+              "TWD",
+              "USD",
+              "VND",
+              "ZAR"
+            ],
+            "default": "USD",
+            "description": "ISO 4217 code for the returned prices. Major currencies include AED, AUD, BRL, CAD, CHF, CNY, EUR, GBP, HKD, INR, JPY, KRW, MXN, NZD, SGD, USD; the searchable dropdown contains all 39 supported codes."
+          }
+        },
+        "required": [
+          "departure",
+          "arrival",
+          "departure_date"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Flight price calendar",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "credit_balance",
+      "title": "Credit balance",
+      "description": "Your plan, remaining credits and the current billing period. Free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "Credit balance",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "api_catalog",
+      "title": "What this API can do",
+      "description": "List every endpoint available, grouped by service, each with its purpose and credit cost, plus the date, currency, provenance and error conventions they share. Start here when you need a capability the tool list does not name. Free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "title": "What this API can do",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    }
+  ],
+  "version": "1.0.1"
+}
