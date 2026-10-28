@@ -1,0 +1,19 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "scrapercompany-api-key",
+      "description": "ScraperCompany API key (starts with sk_)",
+      "password": true
+    }
+  ],
+  "servers": {
+    "scrapercompany": {
+      "type": "http",
+      "url": "https://api.scrapercompany.com/mcp",
+      "headers": {
+        "x-api-key": "${input:scrapercompany-api-key}"
+      }
+    }
+  }
+}

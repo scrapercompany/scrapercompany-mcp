@@ -1,0 +1,22 @@
+{
+  "name": "scrapercompany",
+  "version": "1.0.0",
+  "description": "Live hotel, Airbnb/Vrbo and flight prices for your agent: 330-night Google Hotels rate calendars, every booking site's price for a stay, the hotel's own-site rates, guest reviews and Google Flights.",
+  "author": { "name": "ScraperCompany", "email": "support@scrapercompany.com" },
+  "homepage": "https://scrapercompany.com/docs/mcp",
+  "repository": "https://github.com/scrapercompany/scrapercompany-mcp",
+  "license": "MIT",
+  "keywords": ["hotel prices", "rate shopping", "rate parity", "google hotels", "airbnb", "vrbo", "google flights", "hotel reviews", "travel data", "mcp"],
+  "logo": "assets/logo.svg",
+  "variables": {
+    "type": "object",
+    "properties": {
+      "SCRAPERCOMPANY_API_KEY": {
+        "type": "string",
+        "title": "ScraperCompany API key",
+        "description": "Your API key (starts with sk_). Create one in the dashboard at https://api.scrapercompany.com/dashboard. New accounts get a free trial: 50 calls or 14 days, no card."
+      }
+    },
+    "required": ["SCRAPERCOMPANY_API_KEY"]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "scrapercompany": {
+      "type": "http",
+      "url": "https://api.scrapercompany.com/mcp",
+      "headers": {
+        "x-api-key": "${SCRAPERCOMPANY_API_KEY}"
+      }
+    }
+  }
+}
